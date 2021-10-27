@@ -4,6 +4,9 @@ from termcolor import cprint, colored
 from pyfiglet import figlet_format
 from os import system
 import subprocess
+import SeniorDesign2
+import SeniorDesign3
+from datetime import datetime
 
 
 def print_menu():
@@ -18,14 +21,16 @@ def print_options():
 
     while user_input:
         print(colored('  [1] - .Cif To .Vasp Converter', 'yellow'))
+        print(colored('  [2] - Download .Cif files from MaterialsProject.Org', 'yellow'))
+        print(colored('  [3] - .Vasp To .Cif Converter', 'yellow'))
         print(colored('  [4] - Exit Tool', 'yellow'))
         print(colored("  Selection: ", 'cyan'), end='')
 
         user_input = input()
 
         if user_input == "1":
-            user_input = input('\n  Enter the filename (without the .Cif extension) to convert to .Vasp:  ')
 
+            user_input = input('\n  Enter the filename (With the .Cif extension) to convert to .Vasp: ')
             print(colored("\n-------------------------------", 'cyan'))
             list_files = subprocess.run(["python", "SeniorDesign1.py", user_input.strip()])
 
@@ -33,8 +38,31 @@ def print_options():
                 print(colored("Conversion Successful.", 'green'))
             else:
                 print(colored("Conversion Failed. The exit code was: %d" % list_files.returncode, 'red'))
-
             print(colored("-------------------------------\n", 'cyan'))
+
+        elif user_input == "2":
+
+            number_groups = int(input('\n  Enter the amount of (Groups of elements): '))
+            groups = []
+            for i in range(number_groups):
+                groups.append([elem.strip().title() for elem in
+                               input("  Enter the the elements of group " + str(i) +
+                                     ", separated by a comma (Example: Au,O,Br) : ").split(",")])
+
+            print(colored("\n-------------------------------", 'cyan'))
+            print(colored("Successfully Downloaded .Cif Files, Folder name: " +
+                          "/cifs" + datetime.now().strftime('%Y-%m-%d_%H-%M'), 'green'))
+            SeniorDesign2.download_cif(groups)
+            print(colored("-------------------------------\n", 'cyan'))
+
+        elif user_input == "3":
+
+            user_input = input('\n  Enter the filename (With the .Vasp extension) to convert to .Cif: ')
+            print(colored("\n-------------------------------", 'cyan'))
+            SeniorDesign3.convert(user_input.strip(), user_input.strip()[:-5] + ".cif")
+            print(colored("Conversion Successful.", 'green'))
+            print(colored("-------------------------------\n", 'cyan'))
+
         elif user_input == "4":
             user_input = None
         else:
