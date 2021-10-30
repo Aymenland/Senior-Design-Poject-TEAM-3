@@ -1,8 +1,17 @@
-from math import cos, sin, sqrt, radians
+from pymatgen.io.cif import CifParser
+from pymatgen.io.vasp import Poscar
+import warnings
+warnings.filterwarnings("ignore")
 
 
-def convert(cif_file, output_file):
-    cif_text = cif_file.read().split("\n")
+def convert(cif_filename, output_filename):
+    parser = CifParser(cif_filename)
+    structure = parser.get_structures()[0]
+    p = Poscar(structure=structure)
+    p.write_file(filename=output_filename)
+
+
+"""    cif_text = cif_file.read().split("\n")
 
     lines = cif_text[3: 9]
     lines = [float(line.split(" ")[-1]) for line in lines]
@@ -49,7 +58,7 @@ def convert(cif_file, output_file):
     for line in lines:
         output_file.write(setw("%.9f" % float(line[0]), 16) + "    " + setw("%.9f" % float(line[1]), 16) + "    " +
                           setw("%.9f" % float(line[2]), 16) + "\n")
-
+"""
 
 if __name__ == "__main__":
     print("This is a module that meant to be imported and used, not ran.")

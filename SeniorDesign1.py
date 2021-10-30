@@ -12,8 +12,11 @@ if len(args) > 1:
 
 input_files = (open(args[0], 'r'), args[0])
 if options.output:
-    vasp_file = open(options.output, 'w')
+    vasp_file = options.output
 else:
-    vasp_file = open(args[0][:-4] + ".vasp", 'w')
+    vasp_file = args[0][:-4] + ".vasp"
 
-convert(input_files[0], vasp_file)
+try:
+    convert(input_files[1], vasp_file)
+except:
+    exit(1)
