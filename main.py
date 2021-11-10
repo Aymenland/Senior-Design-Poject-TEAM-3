@@ -50,9 +50,10 @@ def print_options():
                                      ", separated by a comma (Example: Au,O,Br) : ").split(",")])
 
             print(colored("\n-------------------------------", 'cyan'))
-            print(colored("Successfully Downloaded .Cif Files, Folder name: " +
-                          "/cifs" + datetime.now().strftime('%Y-%m-%d_%H-%M'), 'green'))
+            text = "Successfully Downloaded .Cif Files, Folder name: /cifs" + datetime.now().strftime('%Y-%m-%d_%H-%M')
+            print(colored("Downloading...", 'green'))
             SeniorDesign2.download_cif(groups)
+            print(colored(text, 'green'))
             print(colored("-------------------------------\n", 'cyan'))
 
         elif user_input == "3":

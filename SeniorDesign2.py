@@ -15,37 +15,36 @@ def download_cif(groups, path="./cifs" + datetime.now().strftime('%Y-%m-%d %H-%M
     for group in groups:
         combined += group
 
-    for L in range(1, len(groups)):
-        for subset in combinations(combined, L):
-            # Checking wether the subset includes only one element from each group
-            explored = []
-            good = True
-            for element in subset:
-                for i, group in enumerate(groups):
-                    if element in group and i not in explored:
-                        explored.append(i)
-                        break
-                    elif element in group and i in explored:
-                        good = False
-                        break
-
-                if not good:
+    for subset in combinations(combined, len(groups)):
+        # Checking wether the subset includes only one element from each group
+        explored = []
+        good = True
+        for element in subset:
+            for i, group in enumerate(groups):
+                if element in group and i not in explored:
+                    explored.append(i)
                     break
+                elif element in group and i in explored:
+                    good = False
+                    break
+
             if not good:
-                continue
+                break
+        if not good:
+            continue
 
-            # By here, the subset contains only one element from each group
-            text = ""
-            for i, element in enumerate(subset):
-                text += ("-" + element) if i != 0 else element
+        # By here, the subset contains only one element from each group
+        text = ""
+        for i, element in enumerate(subset):
+            text += ("-" + element) if i != 0 else element
 
-            response = requests.get("https://www.materialsproject.org/rest/v2/materials/" + text + "/vasp?API_KEY=" +
-                                    api_key)
-            data = response.json()["response"]
+        response = requests.get("https://www.materialsproject.org/rest/v2/materials/" + text + "/vasp?API_KEY=" +
+                                api_key)
+        data = response.json()["response"]
 
-            for elem in data:
-                file = open(path + elem["material_id"] + "__" + elem["full_formula"] + ".cif", "w")
-                file.write(elem["cif"])
+        for elem in data:
+            file = open(path + elem["material_id"] + "__" + elem["full_formula"] + ".cif", "w")
+            file.write(elem["cif"])
 
 
 if __name__ == "__main__":
