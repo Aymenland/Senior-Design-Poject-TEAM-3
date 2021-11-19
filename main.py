@@ -53,8 +53,41 @@ def print_options():
             date = datetime.now().strftime('%Y-%m-%d_%H-%M')
             text = "Successfully Downloaded .Cif Files, Folder name: /cifs" + date
             print(colored("Downloading...", 'green'))
-            SeniorDesign2.download_cif(groups, "./cifs" + date + "/")
+            data = SeniorDesign2.download_cif(groups, "./cifs" + date + "/")
             print(colored(text, 'green'))
+
+            answer = input('\n  Would you like to convert some of the .Cif files downloaded to .Vasp format (Y/N)? ')
+            options = ["formation_energy_per_atom", "pretty_formula", "e_above_hull", "spacegroup (symbol)",
+                       "band_gap", "nsites", "density", "volume"]
+            parameters = ["Formation Energy (eV)", "Formula", "E Above Hull (eV)", "Spacegroup (Symbol)",
+                          "Band Gab (eV)", "Nsites", "Density", "Volume"]
+            parameters = {parameter: option for parameter, option in zip(parameters, options)}
+
+            if answer.strip().lower() == "y":
+                print("\n  These are the parameters you can filter materials by:")
+                for i, parameter in enumerate(list(parameters.keys())):
+                    print("\n\t", str(i) + ".", parameter)
+
+            while answer.strip().lower() == "y":
+                option = int(input('\n\n  Choose one of the parameters above (enter a number): ').strip().lower())
+                specification = input("\n\t  Enter a specific value or an inclusive range (x, y) for the parameter "
+                                      "chosen: ").strip()
+                data = SeniorDesign2.filter_materials(data, parameters[list(parameters.keys())[option]], specification)
+                del parameters[list(parameters.keys())[option]]
+                answer = input(
+                    '\n  Would you like to filter further with a different parameter (Y/N)? ')
+
+            errors = []
+            for elem in data:
+                errors.append(subprocess.run(["python", "SeniorDesign1.py", "./cifs" + date + "/" + elem["material_id"]
+                                              + "__" + elem["full_formula"] + ".cif"]))
+
+            for error in errors:
+                if error.returncode:
+                    print(colored("Conversion Failed. The exit code was: %d" % error.returncode, 'red'))
+                    break
+
+            print(colored("Conversion Successful.", 'green'))
             print(colored("-------------------------------\n", 'cyan'))
 
         elif user_input == "3":

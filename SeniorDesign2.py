@@ -2,7 +2,6 @@ import requests
 from itertools import combinations
 from datetime import datetime
 import os
-import pathlib
 
 
 api_key = "4bFpW4dGgCprnAN0q"
@@ -46,13 +45,40 @@ def download_cif(groups, path="./cifs" + datetime.now().strftime('%Y-%m-%d %H-%M
             file = open(path + elem["material_id"] + "__" + elem["full_formula"] + ".cif", "w")
             file.write(elem["cif"])
 
+        return data
+
+
+def filter_materials(data, parameter, specification):
+    data1 = []
+    if specification[0] == "(":
+        tpl = specification[1:-1].split(",")
+        tpl = tuple(float(i.strip()) for i in tpl)
+        for elem in data:
+            if tpl[0] <= elem[parameter] <= tpl[1]:
+                data1.append(elem)
+
+    else:
+        if specification == "spacegroup (symbol)":
+            for elem in data:
+                if elem[parameter]["symbol"] == specification:
+                    data1.append(elem)
+        else:
+            for elem in data:
+                if str(elem[parameter]) == specification:
+                    data1.append(elem)
+
+    return data1
+
 
 if __name__ == "__main__":
     print("This is a module that meant to be imported and used, not ran.")
 
-"""    group1 = ["Cu", "Ag", "Au"]
+    """group1 = ["Cu", "Ag", "Au"]
     group2 = ["As", "Sb", "Bi"]
-    group3 = ["Cl", "Br", "I"]
+    group3 = ["Cl", "Br", "I"]"""
+    group1 = ["Cu"]
+    group2 = ["I"]
+    group3 = ["Br"]
     all_groups = [group1, group2, group3]
     
-    download_cif(all_groups, "./cifs/")"""
+    print(download_cif(all_groups, "./cifs/"))
