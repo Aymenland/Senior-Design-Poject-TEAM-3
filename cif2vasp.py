@@ -62,3 +62,4 @@ def convert(cif_filename, output_filename):
 
 if __name__ == "__main__":
     print("This is a module that meant to be imported and used, not ran.")
+    convert("dummy.cif", "dummy.vasp")

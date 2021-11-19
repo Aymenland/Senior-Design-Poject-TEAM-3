@@ -13,6 +13,7 @@ def download_cif(groups, path="./cifs" + datetime.now().strftime('%Y-%m-%d %H-%M
     os.makedirs(mydir)
     for group in groups:
         combined += group
+    data = []
 
     for subset in combinations(combined, len(groups)):
         # Checking wether the subset includes only one element from each group
@@ -39,13 +40,14 @@ def download_cif(groups, path="./cifs" + datetime.now().strftime('%Y-%m-%d %H-%M
 
         response = requests.get("https://www.materialsproject.org/rest/v2/materials/" + text + "/vasp?API_KEY=" +
                                 api_key)
-        data = response.json()["response"]
+        data += response.json()["response"]
 
         for elem in data:
             file = open(path + elem["material_id"] + "__" + elem["full_formula"] + ".cif", "w")
             file.write(elem["cif"])
+            file.close()
 
-        return data
+    return data
 
 
 def filter_materials(data, parameter, specification):
@@ -73,12 +75,9 @@ def filter_materials(data, parameter, specification):
 if __name__ == "__main__":
     print("This is a module that meant to be imported and used, not ran.")
 
-    """group1 = ["Cu", "Ag", "Au"]
-    group2 = ["As", "Sb", "Bi"]
-    group3 = ["Cl", "Br", "I"]"""
-    group1 = ["Cu"]
-    group2 = ["I"]
-    group3 = ["Br"]
+    group1 = ["Cu", "Ag", "Au"]
+    group2 = ["As", "Sb", "I"]
+    group3 = ["Cl", "Br", "Bi"]
     all_groups = [group1, group2, group3]
     
     print(download_cif(all_groups, "./cifs/"))

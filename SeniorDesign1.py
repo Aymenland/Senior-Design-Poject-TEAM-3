@@ -8,7 +8,7 @@ parser.add_option("-o", "--output", dest="output", help="Save VASP to named file
 
 if len(args) > 1:
     print("I can only convert one file at a time")
-    exit(0)
+    exit(1)
 
 input_files = (open(args[0], 'r'), args[0])
 if options.output:
@@ -18,5 +18,6 @@ else:
 
 try:
     convert(input_files[1], vasp_file)
-except:
+except ValueError:
+    print("Invalid cif file.")
     exit(1)

@@ -3,9 +3,12 @@ from pymatgen.io.cif import CifWriter
 
 
 def convert(vasp_file, output_file):
-    poscar = Poscar.from_file(vasp_file)
-    w = CifWriter(poscar.structure)
-    w.write_file(output_file)
+    try:
+        poscar = Poscar.from_file(vasp_file)
+        w = CifWriter(poscar.structure)
+        w.write_file(output_file)
+    except Exception:
+        print("Invalid VASP structure.")
 
 
 if __name__ == "__main__":
