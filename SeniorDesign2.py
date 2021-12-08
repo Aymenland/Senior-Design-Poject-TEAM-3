@@ -1,39 +1,21 @@
 import requests
-from itertools import combinations
 from datetime import datetime
 import os
+from copy import deepcopy
 
 
 api_key = "4bFpW4dGgCprnAN0q"
+result = []
 
 
-def download_cif(groups, path="./cifs" + datetime.now().strftime('%Y-%m-%d %H-%M') + "/"):
-    combined = []
+def download_cif(groups, path="./cifs" + datetime.now().strftime('%Y-%m-%d %H-%M-%S') + "/"):
+    global result
     mydir = os.path.join(os.getcwd(), path[2: -1])
     os.makedirs(mydir)
-    for group in groups:
-        combined += group
     data = []
 
-    for subset in combinations(combined, len(groups)):
-        # Checking wether the subset includes only one element from each group
-        explored = []
-        good = True
-        for element in subset:
-            for i, group in enumerate(groups):
-                if element in group and i not in explored:
-                    explored.append(i)
-                    break
-                elif element in group and i in explored:
-                    good = False
-                    break
-
-            if not good:
-                break
-        if not good:
-            continue
-
-        # By here, the subset contains only one element from each group
+    permutations(groups)
+    for subset in result:
         text = ""
         for i, element in enumerate(subset):
             text += ("-" + element) if i != 0 else element
@@ -47,26 +29,43 @@ def download_cif(groups, path="./cifs" + datetime.now().strftime('%Y-%m-%d %H-%M
             file.write(elem["cif"])
             file.close()
 
+    result = []
     return data
+
+
+def permutations(groups, subset=None, c=0):
+    global result
+    if subset is None:
+        subset = []
+
+    if len(subset) == len(groups):
+        result.append(subset)
+        return
+
+    for elem in groups[c]:
+        permutations(groups, subset + [elem], c + 1)
 
 
 def filter_materials(data, parameter, specification):
     data1 = []
-    if specification[0] == "(":
-        tpl = specification[1:-1].split(",")
-        tpl = tuple(float(i.strip()) for i in tpl)
+    if specification.count(" "):
+        tpl = specification.split(" ")
+        try:
+            tpl = tuple(float(i.strip()) for i in tpl)
+        except ValueError:
+            return 1
         for elem in data:
             if tpl[0] <= elem[parameter] <= tpl[1]:
                 data1.append(elem)
 
     else:
-        if specification == "spacegroup (symbol)":
+        if parameter == "spacegroup (symbol)":
             for elem in data:
-                if elem[parameter]["symbol"] == specification:
+                if elem["spacegroup"]["symbol"] == specification:
                     data1.append(elem)
         else:
             for elem in data:
-                if str(elem[parameter]) == specification:
+                if str(elem[parameter]).lower() == specification.lower():
                     data1.append(elem)
 
     return data1
@@ -75,9 +74,19 @@ def filter_materials(data, parameter, specification):
 if __name__ == "__main__":
     print("This is a module that meant to be imported and used, not ran.")
 
-    group1 = ["Cu", "Ag", "Au"]
+    """group1 = ["Cu", "Ag", "Au"]
     group2 = ["As", "Sb", "I"]
-    group3 = ["Cl", "Br", "Bi"]
+    group3 = ["Cl", "Br", "Bi"]"""
+    group1 = ["Cu"]
+    group2 = ["I"]
+    group3 = ["Br"]
     all_groups = [group1, group2, group3]
-    
-    print(download_cif(all_groups, "./cifs/"))
+
+    data = download_cif(all_groups)
+    for line in data:
+        print(line)
+
+    data1 = filter_materials(data, "full_formula", "Cu2I1Br1")
+    print("\n")
+    for line in data1:
+        print(line)

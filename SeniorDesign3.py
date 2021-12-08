@@ -7,8 +7,13 @@ def convert(vasp_file, output_file):
         poscar = Poscar.from_file(vasp_file)
         w = CifWriter(poscar.structure)
         w.write_file(output_file)
-    except Exception:
+        return 0
+    except ValueError:
         print("Invalid VASP structure.")
+    except FileNotFoundError:
+        print("File", vasp_file, "not found")
+
+    return 1
 
 
 if __name__ == "__main__":
