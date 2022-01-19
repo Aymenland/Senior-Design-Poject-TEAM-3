@@ -2,7 +2,7 @@ import sys
 from colorama import init
 from termcolor import cprint, colored
 from pyfiglet import figlet_format
-from os import system
+from os import system, scandir
 import SeniorDesign1
 import SeniorDesign2
 import SeniorDesign3
@@ -39,7 +39,8 @@ def print_options():
         print(colored('  [1] - .Cif To .Vasp Converter', 'yellow'))
         print(colored('  [2] - Download .Cif files from MaterialsProject.Org', 'yellow'))
         print(colored('  [3] - .Vasp To .Cif Converter', 'yellow'))
-        print(colored('  [4] - Exit', 'yellow'))
+        print(colored('  [4] - POTCAR Merge', 'yellow'))
+        print(colored('  [5] - Exit', 'yellow'))
         print(colored("  Selection: ", 'cyan'), end='')
 
         user_input = input().strip()
@@ -89,7 +90,7 @@ def print_options():
             for i, parameter in enumerate(list(parameters.keys())):
                 print("\n\t", str(i) + ".", parameter)
 
-            while answer.strip().lower() == "y":
+            while answer.strip().lower()[-1] == "y":
                 option = int_input('\n\n  Choose one of the parameters above (enter a number): ',
                                    (0, len(parameters.keys()) - 1))
                 specification = input("\n\t  Enter a specific value x or an inclusive range x y for the parameter "
@@ -98,6 +99,7 @@ def print_options():
                 if data1 == 1:
                     print(colored("Please enter a value x or a inclusive range of numbers x y.\n", "red"))
                     continue
+                old_data = data
                 data = data1
 
                 print(colored("\tSelected CIF files:", "green"))
@@ -108,7 +110,15 @@ def print_options():
                     print(colored("None", "red"))
                 print("\n")
 
-                answer = input('\n  Would you like to filter further with a different parameter (Y/N)? ')
+                answer = input('\n  Would you like to filter further with a different parameter (Y/N) or cancel this '
+                               'filtering and further filter (CY/CN)? ')
+
+                if answer.strip().lower()[0] == "c":
+                    data = old_data
+                    print(colored("\tSelected CIF files:", "green"))
+                    for i, elem in enumerate(data):
+                        print(colored(elem["material_id"] + "__" + elem["full_formula"] + ".cif" +
+                                      ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
 
             errors = []
             for elem in data:
@@ -139,9 +149,44 @@ def print_options():
             print(colored("-------------------------------\n", 'cyan'))
 
         elif user_input == "4":
+
+            user_input = input('\n  Enter the elements separated by a space: ')
+            input_elements = [elem.title() for elem in user_input.split(" ")]
+            available_elements = [f.name for f in scandir("PBE") if f.is_dir()]
+            elements = []
+
+            for elem in input_elements:
+                lst = [elem0.split("_")[0] for elem0 in available_elements]
+                if elem in lst:
+                    potential_elements = [elem0 for elem0 in available_elements if elem0.split("_")[0] == elem]
+                    if len(potential_elements) == 1:
+                        elements.append(potential_elements[0])
+                        continue
+
+                    chosen = input("\nFor " + colored(elem, "green") + ", choose between: " +
+                                   colored("  ".join(potential_elements), "green") + ": ")
+                    chosen = chosen[0].upper() + chosen[1:].lower()
+                    while chosen not in potential_elements:
+                        chosen = input("\nInvalid choice, choose between:" +
+                                       colored("  ".join(potential_elements), "green") + ": ")
+                    elements.append(chosen)
+
+                else:
+                    print(colored("\nThe element", elem, "does not seem to exist in the local database.", "red"))
+
+            with open("MERGED_POTCAR", "w") as merged:
+                for elem in elements:
+                    with open("PBE/" + elem + "/POTCAR", "r") as potcar:
+                        merged.write(potcar.read())
+
+            print(colored("\nMerging successful. File MERGED_POTCAR created.", "green"))
+            print(colored("-------------------------------\n", 'cyan'))
+
+        elif user_input == "5":
             return
         else:
             print(colored("  Not Valid Choice Try again\n", 'red'))
+            return print_options()
 
 
 def change_console_title():
