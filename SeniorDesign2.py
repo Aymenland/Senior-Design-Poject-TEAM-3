@@ -1,7 +1,6 @@
 import requests
 from datetime import datetime
 import os
-from copy import deepcopy
 
 
 api_key = "4bFpW4dGgCprnAN0q"
@@ -24,10 +23,10 @@ def download_cif(groups, path="./cifs" + datetime.now().strftime('%Y-%m-%d %H-%M
                                 api_key)
         data += response.json()["response"]
 
-        for elem in data:
-            file = open(path + elem["material_id"] + "__" + elem["full_formula"] + ".cif", "w")
-            file.write(elem["cif"])
-            file.close()
+    for elem in data:
+        file = open(path + elem["material_id"] + "__" + elem["full_formula"] + ".cif", "w")
+        file.write(elem["cif"])
+        file.close()
 
     result = []
     return data

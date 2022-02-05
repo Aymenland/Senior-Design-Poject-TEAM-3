@@ -6,6 +6,7 @@ from os import system, scandir
 import SeniorDesign1
 import SeniorDesign2
 import SeniorDesign3
+import SeniorDesign5
 from datetime import datetime
 
 
@@ -32,7 +33,7 @@ def int_input(text, bounds=None):
     return ret
 
 
-def print_options():
+def print_options():  # sourcery skip: identity-comprehension, list-comprehension
     user_input = True
 
     while user_input:
@@ -40,7 +41,8 @@ def print_options():
         print(colored('  [2] - Download .Cif files from MaterialsProject.Org', 'yellow'))
         print(colored('  [3] - .Vasp To .Cif Converter', 'yellow'))
         print(colored('  [4] - POTCAR Merge', 'yellow'))
-        print(colored('  [5] - Exit', 'yellow'))
+        print(colored('  [5] - Download the Raw data files from nomad-lab.eu', 'yellow'))
+        print(colored('  [6] - Exit', 'yellow'))
         print(colored("  Selection: ", 'cyan'), end='')
 
         user_input = input().strip()
@@ -83,7 +85,7 @@ def print_options():
                           "Band Gap (eV)", "Nsites", "Density", "Volume"]
             parameters = {parameter: option for parameter, option in zip(parameters, options)}
 
-            if answer.strip().lower() == "n":
+            if answer.strip().lower() != "y":
                 print(colored("\n-------------------------------", 'cyan'))
                 continue
 
@@ -193,7 +195,92 @@ def print_options():
             print(colored("-------------------------------\n", 'cyan'))
 
         elif user_input == "5":
+
+            number_groups = int_input('\n  Enter the amount of (Groups of elements): ', (1, 10))
+            groups = []
+            for i in range(number_groups):
+                groups.append([elem.strip().title() for elem in
+                               input("  Enter the the elements of group " + str(i) +
+                                     ", separated by a comma (Example: Au,O,Br) : ").split(",")])
+
+            print(colored("\n-------------------------------", 'cyan'))
+            text = "\tSelected materials:"
+            print(colored("Loading...", 'green'))
+            data = SeniorDesign5.all_possible_materials(groups)
+            print(colored(text, 'green'))
+            for i, elem in enumerate(data):
+                print(colored(elem["full_formula"] + ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
+            print('\n')
+
+            options = ["formation_energy_per_atom", "full_formula", "e_above_hull", "spacegroup (symbol)",
+                       "band_gap", "nsites", "density", "volume"]
+            parameters = ["Formation Energy (eV)", "Formula (ex: Cu2I1Br1)", "E Above Hull (eV)", "Spacegroup (Symbol)",
+                          "Band Gap (eV)", "Nsites", "Density", "Volume"]
+            parameters = {parameter: option for parameter, option in zip(parameters, options)}
+
+            if len(data) > 1:
+                print("\n  These are the parameters you can filter materials by, please filter until only one material "
+                      "is left:")
+                for i, parameter in enumerate(list(parameters.keys())):
+                    print("\n\t", str(i) + ".", parameter)
+
+            while len(data) > 1:
+                option = int_input('\n\n  Choose one of the parameters above (enter a number): ',
+                                   (0, len(parameters.keys()) - 1))
+                specification = input("\n\t  Enter a specific value x or an inclusive range x y for the parameter "
+                                      "chosen: ").strip()
+                data1 = SeniorDesign5.filter_materials(data, parameters[list(parameters.keys())[option]], specification)
+                if data1 == 1:
+                    print(colored("Please enter a value x or a inclusive range of numbers x y.\n", "red"))
+                    continue
+                old_data = data
+                data = data1
+
+                print(colored("\t\nSelected materials:", "green"))
+                for i, elem in enumerate(data):
+                    print(colored(elem["full_formula"] + ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
+
+                if not data:
+                    print(colored("None. Canceling this filtering...\n", "red"))
+                    data = old_data
+
+                    print(colored("\tSelected materials:", "green"))
+                    for i, elem in enumerate(data):
+                        print(colored(elem["full_formula"] + ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
+                    print("\n")
+                    continue
+                print("\n")
+
+                # CANCELING THE FILTERING
+                answer = input("\n Would you like to cancel this filtering (Y/N)? ")
+                print()
+
+                if answer.strip().lower()[0] == "y":
+                    data = old_data
+                    print(colored("\tSelected CIF files:", "green"))
+                    for i, elem in enumerate(data):
+                        print(colored(elem["full_formula"] + ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
+
+            print(colored("Downloading the Raw data files...\n", 'green'))
+
+            errors = []
+            for elem in data:
+                errors.append(SeniorDesign5.download_metadata(elem["full_formula"]))
+
+            not_good = False
+            for error in errors:
+                if error:
+                    print(colored("Error. The exit code was: %d" % error, 'red'))
+                    not_good = True
+                    break
+
+            if not not_good:
+                print(colored("Downloading Successful.", 'green'))
+            print(colored("-------------------------------\n", 'cyan'))
+
+        elif user_input == "6":
             return
+
         else:
             print(colored("  Not Valid Choice Try again\n", 'red'))
             return print_options()
