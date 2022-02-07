@@ -33,6 +33,19 @@ def int_input(text, bounds=None):
     return ret
 
 
+def groups_input():
+    number_groups = int_input('\n  Enter the amount of (Groups of elements): ', (1, 10))
+    groups = []
+    for i in range(number_groups):
+        nput = input("  Enter the elements of group " + str(i) + ", separated by a comma (Example: Au,O,Br) : ")
+        if " " in nput:
+            print(colored("\tPlease enter elements separated by commas instead of spaces (Example: Au,O,Br).\n", "red"))
+            return groups_input()
+        groups.append([elem.strip().title() for elem in nput.split(",")])
+
+    return groups
+
+
 def print_options():  # sourcery skip: identity-comprehension, list-comprehension
     user_input = True
 
@@ -60,12 +73,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
 
         elif user_input == "2":
 
-            number_groups = int_input('\n  Enter the amount of (Groups of elements): ', (1, 10))
-            groups = []
-            for i in range(number_groups):
-                groups.append([elem.strip().title() for elem in
-                               input("  Enter the the elements of group " + str(i) +
-                                     ", separated by a comma (Example: Au,O,Br) : ").split(",")])
+            groups = groups_input()
 
             print(colored("\n-------------------------------", 'cyan'))
             date = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -196,12 +204,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
 
         elif user_input == "5":
 
-            number_groups = int_input('\n  Enter the amount of (Groups of elements): ', (1, 10))
-            groups = []
-            for i in range(number_groups):
-                groups.append([elem.strip().title() for elem in
-                               input("  Enter the the elements of group " + str(i) +
-                                     ", separated by a comma (Example: Au,O,Br) : ").split(",")])
+            groups = groups_input()
 
             print(colored("\n-------------------------------", 'cyan'))
             text = "\tSelected materials:"
@@ -216,7 +219,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
                        "band_gap", "nsites", "density", "volume"]
             parameters = ["Formation Energy (eV)", "Formula (ex: Cu2I1Br1)", "E Above Hull (eV)", "Spacegroup (Symbol)",
                           "Band Gap (eV)", "Nsites", "Density", "Volume"]
-            parameters = {parameter: option for parameter, option in zip(parameters, options)}
+            parameters = dict(zip(parameters, options))
 
             if len(data) > 1:
                 print("\n  These are the parameters you can filter materials by, please filter until only one material "
@@ -263,14 +266,15 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
 
             print(colored("Downloading the Raw data files...\n", 'green'))
 
-            errors = []
-            for elem in data:
-                errors.append(SeniorDesign5.download_metadata(elem["full_formula"]))
+            errors = [
+                SeniorDesign5.download_metadata(elem["full_formula"]) for elem in data
+            ]
 
             not_good = False
             for error in errors:
                 if error:
-                    print(colored("Error. The exit code was: %d" % error, 'red'))
+                    print(colored("Error. GGA Static Calculation is not available for the selected material."
+                                  "The exit code was: %d" % error, 'red'))
                     not_good = True
                     break
 

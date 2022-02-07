@@ -49,6 +49,7 @@ def download_metadata(material):
     # Get the GGA static task ID
     response = requests.get("https://materialsproject.org/materials/" + material_id + "/tasks")
     tasks = response.json()
+
     task_id = ""
     for task in tasks:
         if task['task_type'] == "GGA Static" and "blessed" in task:
