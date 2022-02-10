@@ -18,7 +18,7 @@ def print_menu():
 
 
 def int_input(text, bounds=None):
-    ret = input(text)
+    ret = q_input(text)
     while True:
         try:
             ret = int(ret)
@@ -28,16 +28,24 @@ def int_input(text, bounds=None):
             pass
 
         print("Please enter a number within the bounds", bounds)
-        ret = input(text)
+        ret = q_input(text)
 
     return ret
+
+
+def q_input(text=""):
+    response = input(text)
+    if response.lower().strip() == "q":
+        sys.exit(0)
+
+    return response
 
 
 def groups_input():
     number_groups = int_input('\n  Enter the amount of (Groups of elements): ', (1, 10))
     groups = []
     for i in range(number_groups):
-        nput = input("  Enter the elements of group " + str(i) + ", separated by a comma (Example: Au,O,Br) : ")
+        nput = q_input("  Enter the elements of group " + str(i) + ", separated by a comma (Example: Au,O,Br) : ")
         if " " in nput:
             print(colored("\tPlease enter elements separated by commas instead of spaces (Example: Au,O,Br).\n", "red"))
             return groups_input()
@@ -58,11 +66,11 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
         print(colored('  [6] - Exit', 'yellow'))
         print(colored("  Selection: ", 'cyan'), end='')
 
-        user_input = input().strip()
+        user_input = q_input().strip()
 
         if user_input == "1":
 
-            user_input = input('\n  Enter the filename (With the .Cif extension) to convert to .Vasp: ')
+            user_input = q_input('\n  Enter the filename (With the .Cif extension) to convert to .Vasp: ')
             print(colored("\n-------------------------------", 'cyan'))
             return_code = SeniorDesign1.convert(user_input.strip(), user_input.strip()[:-4] + ".vasp")
             if not return_code:
@@ -85,7 +93,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
                 print(colored(elem["material_id"] + "__" + elem["full_formula"] + ".cif" +
                               ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
 
-            answer = input('\n\n  Would you like to filter then convert the selected .Cif files downloaded to .Vasp '
+            answer = q_input('\n\n  Would you like to filter then convert the selected .Cif files downloaded to .Vasp '
                            'format (Y/N)? ')
             options = ["formation_energy_per_atom", "full_formula", "e_above_hull", "spacegroup (symbol)",
                        "band_gap", "nsites", "density", "volume"]
@@ -104,7 +112,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
             while answer.strip().lower()[0] == "y":
                 option = int_input('\n\n  Choose one of the parameters above (enter a number): ',
                                    (0, len(parameters.keys()) - 1))
-                specification = input("\n\t  Enter a specific value x or an inclusive range x y for the parameter "
+                specification = q_input("\n\t  Enter a specific value x or an inclusive range x y for the parameter "
                                       "chosen: ").strip()
                 data1 = SeniorDesign2.filter_materials(data, parameters[list(parameters.keys())[option]], specification)
                 if data1 == 1:
@@ -122,7 +130,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
                 print("\n")
 
                 # CANCELING THE FILTERING
-                answer = input("\n Would you like to cancel this filtering (Y/N)? ")
+                answer = q_input("\n Would you like to cancel this filtering (Y/N)? ")
 
                 if answer.strip().lower()[0] == "y":
                     data = old_data
@@ -132,7 +140,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
                                       ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
 
                 # FILTER FURTHER?
-                answer = input('\n\n  Would you like to filter further with a different parameter (Y/N)? ')
+                answer = q_input('\n\n  Would you like to filter further with a different parameter (Y/N)? ')
 
             errors = []
             for elem in data:
@@ -153,7 +161,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
 
         elif user_input == "3":
 
-            user_input = input('\n  Enter the filename (With the .Vasp extension) to convert to .Cif: ')
+            user_input = q_input('\n  Enter the filename (With the .Vasp extension) to convert to .Cif: ')
             print(colored("\n-------------------------------", 'cyan'))
             return_code = SeniorDesign3.convert(user_input.strip(), user_input.strip()[:-5] + ".cif")
             if not return_code:
@@ -164,7 +172,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
 
         elif user_input == "4":
 
-            user_input = input('\n  Enter the elements separated by a space: ')
+            user_input = q_input('\n  Enter the elements separated by a space: ')
             input_elements = [elem.title() for elem in user_input.split(" ")]
             available_elements = [f.name for f in scandir("PBE") if f.is_dir()]
             lst = [elem0.split("_")[0] for elem0 in available_elements]
@@ -178,11 +186,11 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
                         elements.append(potential_elements[0])
                         continue
 
-                    chosen = input("\nFor " + colored(elem, "green") + ", choose between: " +
+                    chosen = q_input("\nFor " + colored(elem, "green") + ", choose between: " +
                                    colored("  ".join(potential_elements), "green") + ": ")
                     chosen = chosen[0].upper() + chosen[1:].lower()
                     while chosen not in potential_elements:
-                        chosen = input("\nInvalid choice, choose between:" +
+                        chosen = q_input("\nInvalid choice, choose between:" +
                                        colored("  ".join(potential_elements), "green") + ": ")
                     elements.append(chosen)
 
@@ -230,7 +238,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
             while len(data) > 1:
                 option = int_input('\n\n  Choose one of the parameters above (enter a number): ',
                                    (0, len(parameters.keys()) - 1))
-                specification = input("\n\t  Enter a specific value x or an inclusive range x y for the parameter "
+                specification = q_input("\n\t  Enter a specific value x or an inclusive range x y for the parameter "
                                       "chosen: ").strip()
                 data1 = SeniorDesign5.filter_materials(data, parameters[list(parameters.keys())[option]], specification)
                 if data1 == 1:
@@ -255,7 +263,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
                 print("\n")
 
                 # CANCELING THE FILTERING
-                answer = input("\n Would you like to cancel this filtering (Y/N)? ")
+                answer = q_input("\n Would you like to cancel this filtering (Y/N)? ")
                 print()
 
                 if answer.strip().lower()[0] == "y":
@@ -295,10 +303,11 @@ def change_console_title():
 
 
 def main():
+    print("")
     change_console_title()
     print_menu()
     print_options()
-    input('\n\nPress ENTER to exit')
+    q_input('\n\nPress ENTER to exit')
 
 
 if __name__ == '__main__':
