@@ -72,7 +72,7 @@ def download_metadata(material):
     z.extractall(path=material + "/")
 
     path = glob(material + "/*/*/*/*/", recursive=True)[0]
-    last_folder = path.split("\\")[-2]
+    last_folder = path[path.find("launcher"): -1]
     move(src=path, dst=sys.path[0])
     rmtree(material, ignore_errors=False, onerror=handle_remove_readonly)
     os.rename(src=last_folder, dst=material)
