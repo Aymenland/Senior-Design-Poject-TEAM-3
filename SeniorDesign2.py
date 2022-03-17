@@ -21,6 +21,8 @@ def download_cif(groups, path="./cifs" + datetime.now().strftime('%Y-%m-%d %H-%M
 
         response = requests.get("https://www.materialsproject.org/rest/v2/materials/" + text + "/vasp?API_KEY=" +
                                 api_key)
+        if "response" not in response.json():
+            return 1
         data += response.json()["response"]
 
     for elem in data:

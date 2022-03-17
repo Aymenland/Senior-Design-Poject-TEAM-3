@@ -38,6 +38,8 @@ def all_possible_materials(groups):
 
         response = requests.get("https://www.materialsproject.org/rest/v2/materials/" + text + "/vasp?API_KEY=" +
                                 api_key)
+        if "response" not in response.json():
+            return 1
         data += response.json()["response"]
 
     result = []
@@ -75,7 +77,33 @@ def download_metadata(material):
     last_folder = path[path.find("launcher"): -1]
     move(src=path, dst=sys.path[0])
     rmtree(material, ignore_errors=False, onerror=handle_remove_readonly)
-    os.rename(src=last_folder, dst=material)
+    os.rename(src=last_folder, dst=material + " - SubFolder 1")
+
+    # SubFolder 2 Contains the KPoint File and Car Files
+    os.makedirs(material + ' - SubFolder 2')
+
+    files_to_move = ['KPOINTS.gz', 'INCAR.gz', 'POSCAR.gz']
+    source_folder = material + ' - SubFolder 1\\'
+    destination_folder = material + ' - SubFolder 2\\'
+
+    for file in files_to_move:
+        # Construct full file path
+        source = source_folder + file
+        destination = destination_folder
+        # Move file
+        try:
+            move(source, destination)
+        except FileNotFoundError:
+            pass
+
+    os.makedirs(material)
+
+    # Move both subfolders to the main material folder
+    folders_to_move = [material + ' - SubFolder 1', material + ' - SubFolder 2']
+    destination_folder = material
+
+    for file in folders_to_move:
+        move(file, destination_folder)
 
 
 def permutations(groups, subset=None, c=0):
