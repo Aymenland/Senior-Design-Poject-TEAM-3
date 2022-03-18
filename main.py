@@ -345,7 +345,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
             if error:
                 continue
 
-            with open(data[0]["full_formula"] + "/" + data[0]["full_formula"] + " - SubFolder 2/MERGED_POTCAR", "w") as merged:
+            with open(data[0]["full_formula"] + "/InputFiles/POTCAR", "w") as merged:
                 for elem in elements:
                     with open("PBE/" + elem + "/POTCAR", "r") as potcar:
                         merged.write(potcar.read())

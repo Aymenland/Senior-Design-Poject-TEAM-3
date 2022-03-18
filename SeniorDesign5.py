@@ -52,7 +52,6 @@ def download_metadata(material_id, material):
     tasks = response.json()
 
     task_id = ""
-    print(material_id)
     for task in tasks:
         if task['task_type'] == "GGA Static" and "blessed" in task:
             task_id = task["task_id"]
@@ -73,14 +72,14 @@ def download_metadata(material_id, material):
     last_folder = path[path.find("launcher"): -1]
     move(src=path, dst=sys.path[0])
     rmtree(material, ignore_errors=False, onerror=handle_remove_readonly)
-    os.rename(src=last_folder, dst=material + " - SubFolder 1")
+    os.rename(src=last_folder, dst="OriginalData")
 
     # SubFolder 2 Contains the KPoint File and Car Files
-    os.makedirs(material + ' - SubFolder 2')
+    os.makedirs("InputFiles")
 
     files_to_move = ['KPOINTS.gz', 'INCAR.gz', 'POSCAR.gz']
-    source_folder = material + ' - SubFolder 1/'
-    destination_folder = material + ' - SubFolder 2/'
+    source_folder = 'OriginalData/'
+    destination_folder = 'InputFiles/'
 
     for file in files_to_move:
         # Construct full file path
@@ -95,7 +94,7 @@ def download_metadata(material_id, material):
     os.makedirs(material)
 
     # Move both subfolders to the main material folder
-    folders_to_move = [material + ' - SubFolder 1', material + ' - SubFolder 2']
+    folders_to_move = ["OriginalData", "InputFiles"]
     destination_folder = material
 
     for file in folders_to_move:
