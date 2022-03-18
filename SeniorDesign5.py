@@ -46,17 +46,13 @@ def all_possible_materials(groups):
     return data
 
 
-def download_metadata(material):
-    # Get the material's ID
-    response = requests.get("https://www.materialsproject.org/rest/v2/materials/" + material + "/vasp?API_KEY=" +
-                            api_key)
-    material_id = response.json()["response"][0]["material_id"]
-
+def download_metadata(material_id, material):
     # Get the GGA static task ID
     response = requests.get("https://materialsproject.org/materials/" + material_id + "/tasks")
     tasks = response.json()
 
     task_id = ""
+    print(material_id)
     for task in tasks:
         if task['task_type'] == "GGA Static" and "blessed" in task:
             task_id = task["task_id"]
@@ -83,8 +79,8 @@ def download_metadata(material):
     os.makedirs(material + ' - SubFolder 2')
 
     files_to_move = ['KPOINTS.gz', 'INCAR.gz', 'POSCAR.gz']
-    source_folder = material + ' - SubFolder 1\\'
-    destination_folder = material + ' - SubFolder 2\\'
+    source_folder = material + ' - SubFolder 1/'
+    destination_folder = material + ' - SubFolder 2/'
 
     for file in files_to_move:
         # Construct full file path

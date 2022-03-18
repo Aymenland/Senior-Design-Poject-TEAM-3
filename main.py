@@ -299,7 +299,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
             print(colored("Downloading the Raw data files...\n", 'green'))
 
             errors = [
-                SeniorDesign5.download_metadata(elem["full_formula"]) for elem in data
+                SeniorDesign5.download_metadata(elem["material_id"], elem["full_formula"]) for elem in data
             ]
 
             not_good = False
