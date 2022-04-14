@@ -54,7 +54,6 @@ def groups_input():
             print(colored("\tPlease enter elements separated by commas instead of spaces (Example: Au,O,Br).\n", "red"))
             return groups_input()
         groups.append([elem.strip().title() for elem in nput.split(",")])
-
     return groups
 
 
@@ -354,6 +353,31 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
                 print(colored("\nDownloading Successful.", 'green'))
 
             print(colored("-------------------------------\n", 'cyan'))
+
+            # ----> SUPERCELL
+
+            answer = input("Do you want to make a supercell (Y/N)? ")
+            if answer.lower().strip() == "q":
+                return print_options()
+
+            if answer.strip().lower()[0] == "y":
+                nx = input("\nHow many times the initial cell is repeated in the x direction (Nx): ")
+                if nx.lower().strip() == "q":
+                    return print_options()
+                nx = int(nx)
+
+                ny = input("How many times the initial cell is repeated in the y direction (Ny): ")
+                if ny.lower().strip() == "q":
+                    return print_options()
+                ny = int(ny)
+
+                nz = input("How many times the initial cell is repeated in the z direction (Nz): ")
+                if nz.lower().strip() == "q":
+                    return print_options()
+                nz = int(nz)
+
+                SeniorDesign5.supercell(nx, ny, nz, data[0]["full_formula"])
+                print()
 
         elif user_input == "6":
             return

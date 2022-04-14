@@ -19,8 +19,8 @@ def download_cif(groups, path="./cifs" + datetime.now().strftime('%Y-%m-%d %H-%M
         for i, element in enumerate(subset):
             text += ("-" + element) if i != 0 else element
 
-        response = requests.get("https://www.materialsproject.org/rest/v2/materials/" + text + "/vasp?API_KEY=" +
-                                api_key)
+        response = requests.get("https://www.materialsproject.org/rest/v2/materials/" + text + "/vasp",
+                                headers={"x-api-key": api_key})
         if "response" not in response.json():
             return 1
         data += response.json()["response"]
