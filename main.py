@@ -249,6 +249,10 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
             if data == 1:
                 print(colored("Input Error.\n", "red"))
                 continue
+            elif data == 2:
+                print(colored("Materialsproject.org's server is temporarily unable to service your request due to "
+                              "maintenance downtime or capacity problems. Please try again later.\n", "red"))
+                continue
 
             print(colored(text, 'green'))
             for i, elem in enumerate(data):

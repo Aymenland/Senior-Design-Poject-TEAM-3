@@ -47,6 +47,8 @@ def all_possible_materials(groups):
 
         response = requests.get("https://www.materialsproject.org/rest/v2/materials/" + text + "/vasp",
                                 headers={"x-api-key": api_key})
+        if b"503 Service Unavailable" in response.content:
+            return 2
         if "response" not in response.json():
             return 1
         data += response.json()["response"]
