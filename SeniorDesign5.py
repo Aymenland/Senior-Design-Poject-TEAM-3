@@ -138,21 +138,47 @@ def download_metadata(material_id, material):
     for file in folders_to_move:
         move(file, destination_folder)
 
+    # unzipping
+    try:
+        with gzip.open(material + "/InputFiles/KPOINTS.gz", 'rb') as f_in:
+            with open(material + "/InputFiles/KPOINTS", 'wb') as f_out:
+                copyfileobj(f_in, f_out)
+        os.remove(material + "/InputFiles/KPOINTS.gz")
 
-def supercell(nx, ny, nz, material):
-    folder = material + "/Supercell_" + str(nx) + "_" + str(ny) + "_" + str(nz)
+    except FileNotFoundError:
+        pass
+
+    try:
+        with gzip.open(material + "/InputFiles/INCAR.gz", 'rb') as f_in:
+            with open(material + "/InputFiles/INCAR", 'wb') as f_out:
+                copyfileobj(f_in, f_out)
+        os.remove(material + "/InputFiles/INCAR.gz")
+
+    except FileNotFoundError:
+        pass
+
+    try:
+        with gzip.open(material + "/InputFiles/POSCAR.gz", 'rb') as f_in:
+            with open(material + "/InputFiles/POSCAR", 'wb') as f_out:
+                copyfileobj(f_in, f_out)
+        os.remove(material + "/InputFiles/POSCAR.gz")
+
+    except FileNotFoundError:
+        pass
+
+
+def supercell(nx, ny, nz, material="", orig_folder=""):
+    folder = material if not orig_folder else orig_folder + "/Supercell_" + str(nx) + "_" + str(ny) + "_" + str(nz)
     os.makedirs(folder)
 
     # POTCAR & INCAR
 
-    copy(material + "/InputFiles/POTCAR", folder)
-    copy(material + "/InputFiles/INCAR.gz", folder)
+    copy((material + "/InputFiles/POTCAR") if not orig_folder else orig_folder + "/POTCAR", folder)
+    copy((material + "/InputFiles/INCAR") if not orig_folder else orig_folder + "/INCAR", folder)
+    copy((material + "/InputFiles/KPOINTS") if not orig_folder else orig_folder + "/KPOINTS", folder)
+    copy((material + "/InputFiles/POSCAR") if not orig_folder else orig_folder + "/POSCAR", folder)
 
     # KPOINTS
-
-    with gzip.open(material + "/InputFiles/KPOINTS.gz", 'rb') as f_in:
-        with open(folder + "/KPOINTS", 'wb') as f_out:
-            copyfileobj(f_in, f_out)
 
     with open(folder + "/KPOINTS", "r") as file:
         kpoints = file.read()
@@ -165,10 +191,6 @@ def supercell(nx, ny, nz, material):
         file.write(kpoints_new)
 
     # POSCAR
-
-    with gzip.open(material + "/InputFiles/POSCAR.gz", 'rb') as f_in:
-        with open(folder + "/POSCAR", 'wb') as f_out:
-            copyfileobj(f_in, f_out)
 
     with open(folder + "/POSCAR", "r") as file:
         poscar = file.read().split("\n")

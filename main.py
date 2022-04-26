@@ -15,6 +15,7 @@ def print_menu():
     init(strip=not sys.stdout.isatty())
     cprint(figlet_format('AIO Physics Tool'),
            'green', attrs=['bold'])
+    print(colored('Atomic Input / Output Physics Tool \n', 'cyan'))
     print(colored('Tool Created By: Team  3 \n\n', 'cyan'))
 
 
@@ -61,12 +62,11 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
     user_input = True
 
     while user_input:
-        print(colored('  [1] - .Cif To .Vasp Converter', 'yellow'))
-        print(colored('  [2] - Download .Cif files from MaterialsProject.Org', 'yellow'))
-        print(colored('  [3] - .Vasp To .Cif Converter', 'yellow'))
-        print(colored('  [4] - POTCAR Merge', 'yellow'))
-        print(colored('  [5] - Download the Raw data files from nomad-lab.eu', 'yellow'))
-        print(colored('  [6] - Exit', 'yellow'))
+        print(colored('  [1] - Converter', 'yellow'))
+        print(colored('  [2] - POTCAR Merge', 'yellow'))
+        print(colored('  [3] - SUPERCELL Maker', 'yellow'))
+        print(colored('  [4] - Downloader', 'yellow'))
+        print(colored('  [5] - Exit', 'yellow'))
         print(colored("  Selection: ", 'cyan'), end='')
 
         user_input = input().strip()
@@ -75,126 +75,54 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
 
         if user_input == "1":
 
-            user_input = input('\n  Enter the filename (With the .Cif extension) to convert to .Vasp: ')
+            print(colored('\n  \t[1] - .cif to .vasp Converter', 'yellow'))
+            print(colored('  \t[2] - .vasp to .cif Converter', 'yellow'))
+            print(colored("  \tSelection: ", 'cyan'), end='')
+
+            user_input = input().strip()
             if user_input.lower().strip() == "q":
                 return print_options()
 
-            print(colored("\n-------------------------------", 'cyan'))
-            return_code = SeniorDesign1.convert(user_input.strip(), user_input.strip()[:-4] + ".vasp")
-            if not return_code:
-                print(colored("Conversion Successful.", 'green'))
-            else:
-                print(colored("Conversion unsuccessful.", 'red'))
-            print(colored("-------------------------------\n", 'cyan'))
+            if user_input == "1":
+
+                user_input = input('\n  Enter the filename (With the .Cif extension) to convert to .Vasp: ')
+                if user_input.lower().strip() == "q":
+                    return print_options()
+
+                print(colored("\n-------------------------------", 'cyan'))
+                return_code = SeniorDesign1.convert(user_input.strip(), user_input.strip()[:-4] + ".vasp")
+                if not return_code:
+                    print(colored("Conversion Successful.", 'green'))
+                else:
+                    print(colored("Conversion unsuccessful.", 'red'))
+                print(colored("-------------------------------\n", 'cyan'))
+
+            elif user_input == "2":
+
+                user_input = input('\n  Enter the filename (With the .Vasp extension) to convert to .Cif: ')
+                if user_input.lower().strip() == "q":
+                    return print_options()
+
+                print(colored("\n-------------------------------", 'cyan'))
+                return_code = SeniorDesign3.convert(user_input.strip(), user_input.strip()[:-5] + ".cif")
+                if not return_code:
+                    print(colored("Conversion Successful.", 'green'))
+                else:
+                    print(colored("Conversion unsuccessful.", 'red'))
+                print(colored("-------------------------------\n", 'cyan'))
 
         elif user_input == "2":
 
-            groups = groups_input()
-            if groups == 0:
+            directory = input('\n  Enter the name of the local directory where the POTCAR files are located: ').strip()
+            if directory.lower().strip() == "q":
                 return print_options()
-
-            print(colored("\n-------------------------------", 'cyan'))
-            date = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-            text = "\tSuccessfully Downloaded .Cif Files, Folder name: /cifs" + date + ", downloaded files:"
-            print(colored("Downloading...", 'green'))
-            data = SeniorDesign2.download_cif(groups, "./cifs" + date + "/")
-            if data == 1:
-                print(colored("Input Error.\n", "red"))
-                continue
-
-            print(colored(text, 'green'))
-            for i, elem in enumerate(data):
-                print(colored(elem["material_id"] + "__" + elem["full_formula"] + ".cif" +
-                              ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
-
-            answer = input('\n\n  Would you like to filter then convert the selected .Cif files downloaded to .Vasp '
-                           'format (Y/N)? ')
-            if answer.lower().strip() == "q":
-                return print_options()
-
-            if answer.strip().lower() != "y":
-                print(colored("\n-------------------------------", 'cyan'))
-                continue
-
-            options = ["formation_energy_per_atom", "full_formula", "e_above_hull", "spacegroup (symbol)",
-                       "density"]
-            parameters = ["Formation Energy (eV)", "Formula (ex: Cu2I1Br1)", "E Above Hull (eV)", "Spacegroup (Symbol)",
-                          "Density"]
-
-            print("\n",
-                  tabulate([[i] + [elem[option] if option != "spacegroup (symbol)" else elem["spacegroup"]["symbol"]
-                                   for option in options] for i, elem in enumerate(data)], headers=[""] + parameters),
-                  end="\n\n")
-
-            while answer.strip().lower()[0] == "y":
-
-                selections = input("\nSelect materials from the table above by their number (0 - " + str(len(data) - 1)
-                                   + ") separated by commas: ")
-                if selections.strip().lower() == "q":
-                    return print_options()
-
-                old_data = data
-                data = [data[int(elem.strip())] for elem in selections.split(",")]
-
-                print(colored("\tSelected CIF files:", "green"))
-                for i, elem in enumerate(data):
-                    print(colored(elem["material_id"] + "__" + elem["full_formula"] + ".cif" +
-                                  ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
-                if not data:
-                    print(colored("None", "red"))
-                print("\n")
-
-                # CANCELING THE FILTERING
-                answer = input("\n Would you like to cancel this filtering (Y/N)? ")
-                if answer.lower().strip() == "q":
-                    return print_options()
-
-                if answer.strip().lower()[0] == "y":
-                    data = old_data
-                    print(colored("\tSelected CIF files:", "green"))
-                    for i, elem in enumerate(data):
-                        print(colored(elem["material_id"] + "__" + elem["full_formula"] + ".cif" +
-                                      ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
-
-            errors = []
-            for elem in data:
-                errors.append(SeniorDesign1.convert("./cifs" + date + "/" + elem["material_id"]
-                                                    + "__" + elem["full_formula"] + ".cif", "./cifs" + date + "/"
-                                                    + elem["material_id"] + "__" + elem["full_formula"] + ".vasp"))
-
-            not_good = False
-            for error in errors:
-                if error:
-                    print(colored("Conversion Failed. The exit code was: %d" % error, 'red'))
-                    not_good = True
-                    break
-
-            if not not_good:
-                print(colored("Conversion Successful.", 'green'))
-            print(colored("-------------------------------\n", 'cyan'))
-
-        elif user_input == "3":
-
-            user_input = input('\n  Enter the filename (With the .Vasp extension) to convert to .Cif: ')
-            if user_input.lower().strip() == "q":
-                return print_options()
-
-            print(colored("\n-------------------------------", 'cyan'))
-            return_code = SeniorDesign3.convert(user_input.strip(), user_input.strip()[:-5] + ".cif")
-            if not return_code:
-                print(colored("Conversion Successful.", 'green'))
-            else:
-                print(colored("Conversion unsuccessful.", 'red'))
-            print(colored("-------------------------------\n", 'cyan'))
-
-        elif user_input == "4":
 
             nput = input('\n  Enter the elements separated by a space: ')
             if nput.lower().strip() == "q":
                 return print_options()
 
             input_elements = [elem.title() for elem in nput.split(" ")]
-            available_elements = [f.name for f in scandir("PBE") if f.is_dir()]
+            available_elements = [f.name for f in scandir(directory) if f.is_dir()]
             lst = [elem0.split("_")[0] for elem0 in available_elements]
             elements = []
             error = False
@@ -236,154 +164,282 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
             print(colored("\nMerging successful. File MERGED_POTCAR created.", "green"))
             print(colored("-------------------------------\n", 'cyan'))
 
-        elif user_input == "5":
-
-            groups = groups_input()
-            if groups == 0:
+        elif user_input == "3":
+            directory = input(
+                '\n  Enter the path to the folder containing the POSCAR, KPOINTS and POTCAR files: ').strip()
+            if directory.lower().strip() == "q":
                 return print_options()
 
-            print(colored("\n-------------------------------", 'cyan'))
-            text = "\tSelected materials:"
-            print(colored("Loading...", 'green'))
-            data = SeniorDesign5.all_possible_materials(groups)
-            if data == 1:
-                print(colored("Input Error.\n", "red"))
-                continue
-            elif data == 2:
-                print(colored("Materialsproject.org's server is temporarily unable to service your request due to "
-                              "maintenance downtime or capacity problems. Please try again later.\n", "red"))
-                continue
+            nx = input("\nHow many times the initial cell is repeated in the x direction (Nx): ")
+            if nx.lower().strip() == "q":
+                return print_options()
+            nx = int(nx)
 
-            print(colored(text, 'green'))
-            for i, elem in enumerate(data):
-                print(colored(elem["full_formula"] + ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
-            print('\n')
+            ny = input("How many times the initial cell is repeated in the y direction (Ny): ")
+            if ny.lower().strip() == "q":
+                return print_options()
+            ny = int(ny)
 
-            options = ["formation_energy_per_atom", "full_formula", "e_above_hull", "spacegroup (symbol)",
-                       "density"]
-            parameters = ["Formation Energy (eV)", "Formula (ex: Cu2I1Br1)", "E Above Hull (eV)", "Spacegroup (Symbol)",
-                          "Density"]
+            nz = input("How many times the initial cell is repeated in the z direction (Nz): ")
+            if nz.lower().strip() == "q":
+                return print_options()
+            nz = int(nz)
 
-            print("\n",
-                  tabulate([[i] + [elem[option] if option != "spacegroup (symbol)" else elem["spacegroup"]["symbol"]
-                                   for option in options] for i, elem in enumerate(data)], headers=[""] + parameters),
-                  end="\n\n")
+            SeniorDesign5.supercell(nx, ny, nz, orig_folder=directory)
 
-            answer = 'y'
-            while answer.strip().lower()[0] == "y":
+        elif user_input == "4":
 
-                selections = input("\nSelect one material from the table above by its number (0 - " + str(len(data) - 1)
-                                   + "): ").strip()
-                if selections.strip().lower() == "q":
+            print(colored('\n  \t[1] - Download .Cif files from MaterialsProject.Org', 'yellow'))
+            print(colored('  \t[2] - Download All data files from nomad-lab.eu', 'yellow'))
+            print(colored("  \tSelection: ", 'cyan'), end='')
+
+            user_input = input().strip()
+            if user_input.lower().strip() == "q":
+                return print_options()
+
+            if user_input == "1":
+
+                groups = groups_input()
+                if groups == 0:
                     return print_options()
 
-                old_data = data
-                data = [data[int(selections)]]
+                print(colored("\n-------------------------------", 'cyan'))
+                date = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+                text = "\tSuccessfully Downloaded .Cif Files, Folder name: /cifs" + date + ", downloaded files:"
+                print(colored("Downloading...", 'green'))
+                data = SeniorDesign2.download_cif(groups, "./cifs" + date + "/")
+                if data == 1:
+                    print(colored("Input Error.\n", "red"))
+                    continue
 
-                print(colored("\tSelected materials:", "green"))
+                print(colored(text, 'green'))
                 for i, elem in enumerate(data):
-                    print(colored(elem["full_formula"] + ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
+                    print(colored(elem["material_id"] + "__" + elem["full_formula"] + ".cif" +
+                                  ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
 
-                if not data:
-                    print(colored("None", "red"))
-                print('\n')
-
-                # CANCELING THE FILTERING
-                answer = input("\n Would you like to cancel this filtering (Y/N)? ")
+                answer = input(
+                    '\n\n  Would you like to filter then convert the selected .Cif files downloaded to .Vasp '
+                    'format (Y/N)? ')
                 if answer.lower().strip() == "q":
                     return print_options()
 
-                if answer.strip().lower()[0] == "y":
-                    data = old_data
+                if answer.strip().lower() != "y":
+                    print(colored("\n-------------------------------", 'cyan'))
+                    continue
+
+                options = ["formation_energy_per_atom", "full_formula", "e_above_hull", "spacegroup (symbol)",
+                           "density"]
+                parameters = ["Formation Energy (eV)", "Formula (ex: Cu2I1Br1)", "E Above Hull (eV)",
+                              "Spacegroup (Symbol)",
+                              "Density"]
+
+                print("\n",
+                      tabulate([[i] + [elem[option] if option != "spacegroup (symbol)" else elem["spacegroup"]["symbol"]
+                                       for option in options] for i, elem in enumerate(data)],
+                               headers=[""] + parameters),
+                      end="\n\n")
+
+                while answer.strip().lower()[0] == "y":
+
+                    selections = input(
+                        "\nSelect materials from the table above by their number (0 - " + str(len(data) - 1)
+                        + ") separated by commas: ")
+                    if selections.strip().lower() == "q":
+                        return print_options()
+
+                    old_data = data
+                    data = [data[int(elem.strip())] for elem in selections.split(",")]
+
+                    print(colored("\tSelected CIF files:", "green"))
+                    for i, elem in enumerate(data):
+                        print(colored(elem["material_id"] + "__" + elem["full_formula"] + ".cif" +
+                                      ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
+                    if not data:
+                        print(colored("None", "red"))
+                    print("\n")
+
+                    # CANCELING THE FILTERING
+                    answer = input("\n Would you like to cancel this filtering (Y/N)? ")
+                    if answer.lower().strip() == "q":
+                        return print_options()
+
+                    if answer.strip().lower()[0] == "y":
+                        data = old_data
+                        print(colored("\tSelected CIF files:", "green"))
+                        for i, elem in enumerate(data):
+                            print(colored(elem["material_id"] + "__" + elem["full_formula"] + ".cif" +
+                                          ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
+
+                errors = []
+                for elem in data:
+                    errors.append(SeniorDesign1.convert("./cifs" + date + "/" + elem["material_id"]
+                                                        + "__" + elem["full_formula"] + ".cif", "./cifs" + date + "/"
+                                                        + elem["material_id"] + "__" + elem["full_formula"] + ".vasp"))
+
+                not_good = False
+                for error in errors:
+                    if error:
+                        print(colored("Conversion Failed. The exit code was: %d" % error, 'red'))
+                        not_good = True
+                        break
+
+                if not not_good:
+                    print(colored("Conversion Successful.", 'green'))
+                print(colored("-------------------------------\n", 'cyan'))
+
+            elif user_input == "2":
+
+                groups = groups_input()
+                if groups == 0:
+                    return print_options()
+
+                print(colored("\n-------------------------------", 'cyan'))
+                text = "\tSelected materials:"
+                print(colored("Loading...", 'green'))
+                data = SeniorDesign5.all_possible_materials(groups)
+                if data == 1:
+                    print(colored("Input Error.\n", "red"))
+                    continue
+                elif data == 2:
+                    print(colored("Materialsproject.org's server is temporarily unable to service your request due to "
+                                  "maintenance downtime or capacity problems. Please try again later.\n", "red"))
+                    continue
+
+                print(colored(text, 'green'))
+                for i, elem in enumerate(data):
+                    print(colored(elem["full_formula"] + ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
+                print('\n')
+
+                options = ["formation_energy_per_atom", "full_formula", "e_above_hull", "spacegroup (symbol)",
+                           "density"]
+                parameters = ["Formation Energy (eV)", "Formula (ex: Cu2I1Br1)", "E Above Hull (eV)", "Spacegroup (Symbol)",
+                              "Density"]
+
+                print("\n",
+                      tabulate([[i] + [elem[option] if option != "spacegroup (symbol)" else elem["spacegroup"]["symbol"]
+                                       for option in options] for i, elem in enumerate(data)], headers=[""] + parameters),
+                      end="\n\n")
+
+                answer = 'y'
+                while answer.strip().lower()[0] == "y":
+
+                    selections = input("\nSelect one material from the table above by its number (0 - " + str(len(data) - 1)
+                                       + "): ").strip()
+                    if selections.strip().lower() == "q":
+                        return print_options()
+
+                    old_data = data
+                    data = [data[int(selections)]]
+
                     print(colored("\tSelected materials:", "green"))
                     for i, elem in enumerate(data):
                         print(colored(elem["full_formula"] + ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
 
-            print(colored("Downloading the Raw data files...\n", 'green'))
+                    if not data:
+                        print(colored("None", "red"))
+                    print('\n')
 
-            errors = [
-                SeniorDesign5.download_metadata(elem["material_id"], elem["full_formula"]) for elem in data
-            ]
-
-            not_good = False
-            for error in errors:
-                if error:
-                    print(colored("Error. GGA Static Calculation is not available for the selected material."
-                                  "The exit code was: %d" % error, 'red'))
-                    not_good = True
-                    break
-
-            input_elements = data[0]["elements"]
-            available_elements = [f.name for f in scandir("PBE") if f.is_dir()]
-            lst = [elem0.split("_")[0] for elem0 in available_elements]
-            elements = []
-            error = False
-
-            for elem in input_elements:
-                if elem in lst:
-                    potential_elements = [elem0 for elem0 in available_elements if elem0.split("_")[0] == elem]
-                    if len(potential_elements) == 1:
-                        elements.append(potential_elements[0])
-                        continue
-
-                    chosen = input("\nFor " + colored(elem, "green") + ", choose between: " +
-                                   colored("  ".join(potential_elements), "green") + ": ")
-                    if chosen.lower().strip() == "q":
+                    # CANCELING THE FILTERING
+                    answer = input("\n Would you like to cancel this filtering (Y/N)? ")
+                    if answer.lower().strip() == "q":
                         return print_options()
 
-                    chosen = chosen[0].upper() + chosen[1:].lower()
-                    while chosen not in potential_elements:
-                        chosen = input("\nInvalid choice, choose between:" +
+                    if answer.strip().lower()[0] == "y":
+                        data = old_data
+                        print(colored("\tSelected materials:", "green"))
+                        for i, elem in enumerate(data):
+                            print(colored(elem["full_formula"] + ("\n" if (i % 4) == 3 else "\t"), "green"), end="")
+
+                print(colored("Downloading the Raw data files...\n", 'green'))
+
+                errors = [
+                    SeniorDesign5.download_metadata(elem["material_id"], elem["full_formula"]) for elem in data
+                ]
+
+                not_good = False
+                for error in errors:
+                    if error:
+                        print(colored("Error. GGA Static Calculation is not available for the selected material."
+                                      "The exit code was: %d" % error, 'red'))
+                        not_good = True
+                        break
+
+                directory = input(
+                    '\n  Enter the name of the local directory where the POTCAR files are located: ').strip()
+                if directory.lower().strip() == "q":
+                    return print_options()
+
+                input_elements = data[0]["elements"]
+                available_elements = [f.name for f in scandir(directory) if f.is_dir()]
+                lst = [elem0.split("_")[0] for elem0 in available_elements]
+                elements = []
+                error = False
+
+                for elem in input_elements:
+                    if elem in lst:
+                        potential_elements = [elem0 for elem0 in available_elements if elem0.split("_")[0] == elem]
+                        if len(potential_elements) == 1:
+                            elements.append(potential_elements[0])
+                            continue
+
+                        chosen = input("\nFor " + colored(elem, "green") + ", choose between: " +
                                        colored("  ".join(potential_elements), "green") + ": ")
                         if chosen.lower().strip() == "q":
                             return print_options()
 
-                    elements.append(chosen)
+                        chosen = chosen[0].upper() + chosen[1:].lower()
+                        while chosen not in potential_elements:
+                            chosen = input("\nInvalid choice, choose between:" +
+                                           colored("  ".join(potential_elements), "green") + ": ")
+                            if chosen.lower().strip() == "q":
+                                return print_options()
 
-                else:
-                    print(colored("\nThe element " + elem + " does not seem to exist in the local database.", "red"))
-                    print(colored("\nMerging unsuccessful.\n", "red"))
-                    error = True
-                    break
-            if error:
-                continue
+                        elements.append(chosen)
 
-            with open(data[0]["full_formula"] + "/InputFiles/POTCAR", "w") as merged:
-                for elem in elements:
-                    with open("PBE/" + elem + "/POTCAR", "r") as potcar:
-                        merged.write(potcar.read())
+                    else:
+                        print(colored("\nThe element " + elem + " does not seem to exist in the local database.", "red"))
+                        print(colored("\nMerging unsuccessful.\n", "red"))
+                        error = True
+                        break
+                if error:
+                    continue
 
-            if not not_good:
-                print(colored("\nDownloading Successful.", 'green'))
+                with open(data[0]["full_formula"] + "/InputFiles/POTCAR", "w") as merged:
+                    for elem in elements:
+                        with open("PBE/" + elem + "/POTCAR", "r") as potcar:
+                            merged.write(potcar.read())
 
-            print(colored("-------------------------------\n", 'cyan'))
+                if not not_good:
+                    print(colored("\nDownloading Successful.", 'green'))
 
-            # ----> SUPERCELL
+                print(colored("-------------------------------\n", 'cyan'))
 
-            answer = input("Do you want to make a supercell (Y/N)? ")
-            if answer.lower().strip() == "q":
-                return print_options()
+                # ----> SUPERCELL
 
-            if answer.strip().lower()[0] == "y":
-                nx = input("\nHow many times the initial cell is repeated in the x direction (Nx): ")
-                if nx.lower().strip() == "q":
+                answer = input("Do you want to make a supercell (Y/N)? ")
+                if answer.lower().strip() == "q":
                     return print_options()
-                nx = int(nx)
 
-                ny = input("How many times the initial cell is repeated in the y direction (Ny): ")
-                if ny.lower().strip() == "q":
-                    return print_options()
-                ny = int(ny)
+                if answer.strip().lower()[0] == "y":
+                    nx = input("\nHow many times the initial cell is repeated in the x direction (Nx): ")
+                    if nx.lower().strip() == "q":
+                        return print_options()
+                    nx = int(nx)
 
-                nz = input("How many times the initial cell is repeated in the z direction (Nz): ")
-                if nz.lower().strip() == "q":
-                    return print_options()
-                nz = int(nz)
+                    ny = input("How many times the initial cell is repeated in the y direction (Ny): ")
+                    if ny.lower().strip() == "q":
+                        return print_options()
+                    ny = int(ny)
 
-                SeniorDesign5.supercell(nx, ny, nz, data[0]["full_formula"])
-                print()
+                    nz = input("How many times the initial cell is repeated in the z direction (Nz): ")
+                    if nz.lower().strip() == "q":
+                        return print_options()
+                    nz = int(nz)
 
-        elif user_input == "6":
+                    SeniorDesign5.supercell(nx, ny, nz, data[0]["full_formula"])
+                    print()
+
+        elif user_input == "5":
             return
 
         else:
