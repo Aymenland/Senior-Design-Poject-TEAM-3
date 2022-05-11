@@ -158,7 +158,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
 
             with open("MERGED_POTCAR", "w") as merged:
                 for elem in elements:
-                    with open("PBE/" + elem + "/POTCAR", "r") as potcar:
+                    with open(directory + "/" + elem + "/POTCAR", "r") as potcar:
                         merged.write(potcar.read())
 
             print(colored("\nMerging successful. File MERGED_POTCAR created.", "green"))
@@ -406,7 +406,7 @@ def print_options():  # sourcery skip: identity-comprehension, list-comprehensio
 
                 with open(data[0]["full_formula"] + "/InputFiles/POTCAR", "w") as merged:
                     for elem in elements:
-                        with open("PBE/" + elem + "/POTCAR", "r") as potcar:
+                        with open(directory + "/" + elem + "/POTCAR", "r") as potcar:
                             merged.write(potcar.read())
 
                 if not not_good:
